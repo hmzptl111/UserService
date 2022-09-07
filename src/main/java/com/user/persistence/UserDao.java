@@ -1,5 +1,7 @@
 package com.user.persistence;
 
+import java.util.Optional;
+
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +14,7 @@ import com.user.bean.User;
 
 @Repository
 public interface UserDao extends JpaRepository<User, String> {
-	User findByEmail(String email);
+	Optional<User> findByEmail(String email);
 	
 	@Transactional
 	@Modifying

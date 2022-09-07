@@ -1,5 +1,7 @@
 package com.user.resource;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,12 +23,23 @@ public class UserResource {
 	private UserService userService;
 	
 	@GetMapping(path = "/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public User getUserByEmail(@PathVariable("email") String email) {
-		return userService.getUserByEmail(email);
+	public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+		Optional<User> user = userService.getUserByEmail(email);
+		if(user.isPresent()) {
+			return new ResponseEntity<User>(user.get(), HttpStatus.FOUND);
+		}
+		
+		return new ResponseEntity<User>(new User(), HttpStatus.NOT_FOUND);
 	}
 	
 	@PostMapping(path = "/add", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<User> addUser(@RequestBody User user) {
-		return new ResponseEntity<User>(user, HttpStatus.CREATED);
+		if(!userService.getUserByEmail(user.getEmail()).isPresent()) {
+			if(userService.addUser(user)) {
+				return new ResponseEntity<User>(user, HttpStatus.CREATED);
+			}
+		}
+
+		return new ResponseEntity<User>(new User(), HttpStatus.BAD_REQUEST);
 	}
 }
